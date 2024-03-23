@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import { ReentrancyGuard } from "node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import { Ownable } from "node_modules/@openzeppelin/contracts/access/Ownable.sol";
+import { ReentrancyGuard } from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { MessageDataCodec, MessageData, MessageType, ReactionType } from "farcaster-solidity/contracts/protobufs/message.proto.sol";
 import { Blake3 } from "farcaster-solidity/contracts/libraries/Blake3.sol";
 import { Ed25519 } from "farcaster-solidity/contracts/libraries/Ed25519.sol";
