@@ -12,7 +12,6 @@ const USER_FID = 1
 const FRAME_URL = "http://localhost:3000/api"
 const SLOT_DURATION = 60
 
-const ed25519Signer = Factories.Ed25519Signer.build()
 const ed25519Influencer = Factories.Ed25519Signer.build()
 
 describe("AdBooster", () => {
