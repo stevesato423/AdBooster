@@ -33,7 +33,7 @@ const app = new Frog({
 //app.use('/slots', fdk.analyticsMiddleware({ frameId: 'adbooster', customId: 'slots' }))
 
 app.frame('/', async (_context) => {
-  const NO_AD_IMAGE = 'https://' + process.env.PINATA_GATEWAY + '/ipfs/QmXn91ayayHEHkFqcvC4tqbu8HahuMvQiwiBvwHy8dAN87'
+  const NO_AD_IMAGE = 'https://' + process.env.PINATA_GATEWAY + '/ipfs/QmevDL6zi5UGWzFhCMN4ogoWzLjHhYhvQnu47jhZtK6m2U'
   const NO_AD_URL = 'https://warpcast.com/allemanfredi.eth'
   const frameId = getFrameId(_context.url)
 
