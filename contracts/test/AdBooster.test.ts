@@ -1,5 +1,5 @@
 import { time } from "@nomicfoundation/hardhat-network-helpers"
-import { Factories, FarcasterNetwork, MessageData, MessageType, ReactionType } from "@farcaster/core"
+import { Factories, FarcasterNetwork, MessageData, MessageType } from "@farcaster/core"
 import { expect } from "chai"
 import { ethers } from "hardhat"
 import { SignerWithAddress } from "@nomicfoundation/hardhat-ethers/signers"
