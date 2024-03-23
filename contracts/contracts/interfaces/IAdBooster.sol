@@ -33,6 +33,10 @@ interface IAdBooster {
 
     function claimRewardsByAdSlots(bytes calldata messageFrameCreation, uint256[] calldata slots) external payable;
 
+    function getAdsBySlots(bytes32 frameId, uint256[] calldata slots) external view returns (Ad[] memory);
+
+    function getAdForCurrentSlot(bytes32 frameId) external view returns (Ad memory);
+
     function getCurrentAdSlot() external view returns (uint256);
 
     function putAdSlotsOnSale(bytes32 publicKey, bytes32 r, bytes32 s, bytes memory message) external;

@@ -83,6 +83,20 @@ contract AdBooster is IAdBooster, ReentrancyGuard, Ownable {
     }
 
     /// @inheritdoc IAdBooster
+    function getAdsBySlots(bytes32 frameId, uint256[] calldata slots) external view returns (Ad[] memory) {
+        Ad[] memory ads = new Ad[](slots.length);
+        for (uint256 i = 0; i < slots.length; i++) {
+            ads[i] = _ads[frameId][slots[i]];
+        }
+        return ads;
+    }
+
+    /// @inheritdoc IAdBooster
+    function getAdForCurrentSlot(bytes32 frameId) external view returns (Ad memory) {
+        return _ads[frameId][getCurrentAdSlot()];
+    }
+
+    /// @inheritdoc IAdBooster
     function getCurrentAdSlot() public view returns (uint256) {
         return (block.timestamp - START_TIMESTAMP) / SLOT_DURATION;
     }
