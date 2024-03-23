@@ -2,22 +2,23 @@
 
 import { Button, Frog, TextInput } from 'frog'
 import { devtools } from 'frog/dev'
-import { createPublicClient, http, keccak256, encodeAbiParameters } from 'viem'
+import { createPublicClient, http, keccak256, encodeAbiParameters, formatEther, parseEther } from 'viem'
 import { optimism } from 'viem/chains'
 // import { neynar } from 'frog/hubs'
 import { handle } from 'frog/next'
 import { serveStatic } from 'frog/serve-static'
 import { PinataFDK } from 'pinata-fdk'
+import moment from 'moment'
 
 import adBoosterAbi from '../../utils/abi/AdBooster.json'
 
 const getIpfsGatewayUrl = (_ref: string) => `https://cloudflare-ipfs.com/ipfs/${_ref.slice(7)}`
 const getFrameId = (_url: string) => keccak256(encodeAbiParameters([{ type: 'string' }], [new URL(_url).host + '/api']))
 
-/*const fdk = new PinataFDK({
+const fdk = new PinataFDK({
   pinata_jwt: process.env.PINATA_JWT || '',
   pinata_gateway: process.env.PINATA_GATEWAY as string
-})*/
+})
 
 const publicClient = createPublicClient({
   chain: optimism,
@@ -56,6 +57,82 @@ app.frame('/', async (_context) => {
     image,
     imageAspectRatio: '1:1',
     intents: [<Button action="/slots">Buy slot</Button>, <Button.Redirect location={url}>View</Button.Redirect>]
+  })
+})
+
+app.frame('/slots', async (_context) => {
+  const VISIBILE_SLOTS = 24
+  const frameId = getFrameId(_context.url)
+
+  const [currentSlot, startTimestamp, slotDuration] = (await Promise.all([
+    publicClient.readContract({
+      address: process.env.ADS_MANAGER_ADDRESS as `0x${string}`,
+      abi: adBoosterAbi,
+      functionName: 'getCurrentAdSlot',
+      args: []
+    }),
+    publicClient.readContract({
+      address: process.env.ADS_MANAGER_ADDRESS as `0x${string}`,
+      abi: adBoosterAbi,
+      functionName: 'START_TIMESTAMP',
+      args: []
+    }),
+    publicClient.readContract({
+      address: process.env.ADS_MANAGER_ADDRESS as `0x${string}`,
+      abi: adBoosterAbi,
+      functionName: 'SLOT_DURATION',
+      args: []
+    })
+  ])) as [bigint, bigint, bigint]
+
+  const startTimestampCurrentSlot = startTimestamp + currentSlot * slotDuration
+  const slots = Array.from({ length: VISIBILE_SLOTS }).map((_, _index) => _index + Number(currentSlot) + 1)
+  const startsAt = slots.map((_, _index) =>
+    moment
+      .unix(Number(startTimestampCurrentSlot))
+      .add(_index * Number(slotDuration), 'seconds')
+      .format('MM/DD HH:mm:ss')
+  )
+
+  const ads = (await publicClient.readContract({
+    address: process.env.ADS_MANAGER_ADDRESS as `0x${string}`,
+    abi: adBoosterAbi,
+    functionName: 'getAdsBySlots', // getAdsBySlots
+    args: [frameId, slots]
+  })) as []
+
+  return _context.res({
+    action: '/finish',
+    image: (
+      <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+        {ads.map(({ amount }, _index) => {
+          return (
+            <div
+              style={{
+                backgroundColor: 'white',
+                width: 300,
+                height: 104,
+                alignItems: 'center',
+                justifyContent: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                fontSize: 24,
+                borderRight: '1px solid black',
+                borderBottom: '1px solid black'
+              }}
+            >
+              <span>{slots[_index]}</span>
+              <span>{formatEther(amount)} ETH</span> <span style={{ fontSize: 16 }}>{startsAt[_index]}</span>
+            </div>
+          )
+        })}
+      </div>
+    ),
+    intents: [
+      <TextInput placeholder="Slot,amount, IPFS multihash" />,
+      <Button action="/">Back</Button>,
+      <Button.Transaction target="/buy">Buy</Button.Transaction>
+    ]
   })
 })
 
