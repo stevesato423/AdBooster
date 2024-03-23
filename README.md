@@ -23,8 +23,8 @@ Enter AdBooster: a decentralized advertising space where users can sell digital 
 
 
 ## How it works
-* Once the user has created the AdBooster frame, they must call `putAdSlotsOnSale`, providing the AdBooster contract with the signed Farcaster message that proves the user has indeed created the Frame.
+* Once the user has created the AdBooster frame, he must call `putAdSlotsOnSale`, providing the AdBooster contract with the signed Farcaster message that proves the user has indeed created the Frame.
 * If the message is valid, then AdBooster will enable the purchase of slots belonging to the newly registered Frame.
-* From this moment, users can buy slots for the Frame by calling buyAdSlot.
+* From this moment, users can buy slots for the Frame by calling `buyAdSlot`.
 * For each slot, an auction starts. The one who pays the most gets the slot.
 * The user who earned fees by selling their digital spaces can claim these fees by calling `claimRewardsByAdSlots`.
