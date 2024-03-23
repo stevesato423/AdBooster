@@ -136,6 +136,46 @@ app.frame('/slots', async (_context) => {
   })
 })
 
+app.transaction('/buy', async (_context) => {
+  const { inputText = '' } = _context
+  const frameId = getFrameId(_context.url)
+
+  const values = inputText?.split(',')
+  const slot = values[0]
+  const value = parseEther(values[1] as string)
+  const ref = values[2]
+
+  return _context.contract({
+    abi: adBoosterAbi,
+    chainId: `eip155:${optimism.id}`,
+    functionName: 'buyAdSlot',
+    args: [frameId, slot, ref],
+    to: process.env.ADS_MANAGER_ADDRESS as `0x${string}`,
+    value
+  })
+})
+
+app.frame('/finish', async (_context) => {
+  return _context.res({
+    image: (
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'white',
+          fontSize: 96,
+          width: '100%',
+          height: '100%'
+        }}
+      >
+        <span>Slot bought!</span>
+      </div>
+    ),
+    intents: [<Button action="/">Continue</Button>]
+  })
+})
+
 devtools(app, { serveStatic })
 
 export const GET = handle(app)
