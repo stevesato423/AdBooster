@@ -27,10 +27,10 @@ const publicClient = createPublicClient({
 
 const app = new Frog({
   assetsPath: '/',
-  basePath: '/api',
+  basePath: '/api'
 })
 
-//app.use('/slots', fdk.analyticsMiddleware({ frameId: 'adbooster', customId: 'slots' }))
+app.use('/slots', fdk.analyticsMiddleware({ frameId: 'adbooster', customId: 'slots' }))
 
 app.frame('/', async (_context) => {
   const NO_AD_IMAGE = 'https://' + process.env.PINATA_GATEWAY + '/ipfs/QmevDL6zi5UGWzFhCMN4ogoWzLjHhYhvQnu47jhZtK6m2U'
