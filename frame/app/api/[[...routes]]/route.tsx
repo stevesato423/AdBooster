@@ -31,6 +31,8 @@ const app = new Frog({
 })
 
 app.use('/slots', fdk.analyticsMiddleware({ frameId: 'adbooster', customId: 'slots' }))
+app.use('/buy', fdk.analyticsMiddleware({ frameId: 'adbooster', customId: 'buy' }))
+app.use('/finish', fdk.analyticsMiddleware({ frameId: 'adbooster', customId: 'finish' }))
 
 app.frame('/', async (_context) => {
   const NO_AD_IMAGE = 'https://' + process.env.PINATA_GATEWAY + '/ipfs/QmevDL6zi5UGWzFhCMN4ogoWzLjHhYhvQnu47jhZtK6m2U'
