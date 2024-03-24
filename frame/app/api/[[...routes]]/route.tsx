@@ -35,7 +35,7 @@ app.use('/buy', fdk.analyticsMiddleware({ frameId: 'adbooster', customId: 'buy' 
 app.use('/finish', fdk.analyticsMiddleware({ frameId: 'adbooster', customId: 'finish' }))
 
 app.frame('/', async (_context) => {
-  const NO_AD_IMAGE = 'https://' + process.env.PINATA_GATEWAY + '/ipfs/QmevDL6zi5UGWzFhCMN4ogoWzLjHhYhvQnu47jhZtK6m2U'
+  const NO_AD_IMAGE = '/placeholder.png'
   const NO_AD_URL = 'https://warpcast.com/allemanfredi.eth'
   const frameId = getFrameId(_context.url)
 
