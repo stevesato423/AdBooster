@@ -40,6 +40,8 @@ interface IAdBooster {
 
     function getCurrentAdSlot() external view returns (uint256);
 
+    function isSaleEnabledFor(bytes32 frameId) external view returns (bool);
+
     function putAdSlotsOnSale(bytes32 publicKey, bytes32 r, bytes32 s, bytes memory message) external;
 
     function withdrawFees() external;

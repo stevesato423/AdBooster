@@ -99,6 +99,11 @@ contract AdBooster is IAdBooster, ReentrancyGuard, Ownable {
     }
 
     /// @inheritdoc IAdBooster
+    function isSaleEnabledFor(bytes32 frameId) external view returns (bool) {
+        return _adSlotsCreators[frameId] != address(0);
+    }
+
+    /// @inheritdoc IAdBooster
     function putAdSlotsOnSale(bytes32 publicKey, bytes32 r, bytes32 s, bytes memory message) external {
         (MessageData memory messageData, ) = _verifyMessage(publicKey, r, s, message);
         if (messageData.type_ != MessageType.MESSAGE_TYPE_CAST_ADD) revert InvalidMessageType();
