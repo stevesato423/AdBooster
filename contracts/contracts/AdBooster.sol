@@ -12,17 +12,17 @@ import { IAdBooster } from "./interfaces/IAdBooster.sol";
 contract AdBooster is IAdBooster, ReentrancyGuard, Ownable {
     uint256 public constant FEE = 50; // 0.5%
     uint256 public constant PERCENTAGE_DIVISOR = 10000;
-    uint256 public constant SLOT_DURATION = 1 minutes;
+    uint256 public constant SLOT_DURATION = 10 minutes;
 
     uint256 public immutable START_TIMESTAMP;
     address public immutable ID_REGISTRY;
 
     uint256 public earnedFees;
     mapping(bytes32 => mapping(uint256 => Ad)) private _ads;
-    mapping(bytes32 => bool) private _adSlotsOnSale;
+    mapping(bytes32 => address) private _adSlotsCreators;
 
-    constructor(address idRegistry_) ReentrancyGuard() Ownable(msg.sender) {
-        ID_REGISTRY = idRegistry_;
+    constructor(address idRegistry) ReentrancyGuard() Ownable(msg.sender) {
+        ID_REGISTRY = idRegistry;
         START_TIMESTAMP = block.timestamp;
     }
 
@@ -32,7 +32,7 @@ contract AdBooster is IAdBooster, ReentrancyGuard, Ownable {
         uint256 fid = IIdRegistry(ID_REGISTRY).idOf(msg.sender);
         if (fid == 0) revert FidNotRegistered();
         if (getCurrentAdSlot() >= slot) revert InvalidSlot();
-        //if (!_adSlotsOnSale[frameId]) revert AdSlotNotOnSale();
+        if (_adSlotsCreators[frameId] == address(0)) revert AdSlotNotOnSale();
 
         Ad storage currentAd = _ads[frameId][slot];
         uint256 currentAdAmount = currentAd.amount;
@@ -48,12 +48,9 @@ contract AdBooster is IAdBooster, ReentrancyGuard, Ownable {
     }
 
     /// @inheritdoc IAdBooster
-    function claimRewardsByAdSlots(
-        bytes calldata messageFrameCreation,
-        uint256[] calldata slots
-    ) external payable nonReentrant {
-        MessageData memory messageData = _decodeMessageData(messageFrameCreation);
-        bytes32 frameId = keccak256(abi.encode(messageData.cast_add_body.text));
+    function claimRewardsByAdSlots(bytes32 frameId, uint256[] calldata slots) external payable nonReentrant {
+        address creator = _adSlotsCreators[frameId];
+        if (creator == address(0)) revert InvalidFrameId();
 
         uint256 currentSlot = getCurrentAdSlot();
         uint256 cumulativeAmount = 0;
@@ -70,7 +67,7 @@ contract AdBooster is IAdBooster, ReentrancyGuard, Ownable {
                 ++i;
             }
 
-            emit RewardClaimed(frameId, slot, messageData.fid, ad.fid, adAmount);
+            emit RewardClaimed(frameId, slot, IIdRegistry(ID_REGISTRY).idOf(creator), ad.fid, adAmount);
             delete _ads[frameId][slot];
         }
 
@@ -78,7 +75,7 @@ contract AdBooster is IAdBooster, ReentrancyGuard, Ownable {
         uint256 rewardAmount = cumulativeAmount - fee;
         earnedFees += fee;
 
-        (bool sent, ) = IIdRegistry(ID_REGISTRY).custodyOf(messageData.fid).call{ value: rewardAmount }("");
+        (bool sent, ) = creator.call{ value: rewardAmount }("");
         if (!sent) revert FailedToSendEth();
     }
 
@@ -106,20 +103,19 @@ contract AdBooster is IAdBooster, ReentrancyGuard, Ownable {
         (MessageData memory messageData, ) = _verifyMessage(publicKey, r, s, message);
         if (messageData.type_ != MessageType.MESSAGE_TYPE_CAST_ADD) revert InvalidMessageType();
 
-        // NOTE: each user that wants to use the AdBooster must deploy the FRAME under different urls (also using the same domain)
-        // because it's not possible to create a single frame that is able to recognize in which feed is showed
-        bytes32 frameId = keccak256(abi.encode(messageData.cast_add_body.text));
-        if (frameId != keccak256(abi.encode(messageData.cast_add_body.embeds[0].url))) revert InvalidFrame();
+        string memory url = messageData.cast_add_body.embeds[0].url;
+        bytes32 frameId = keccak256(abi.encode(url));
 
         address creator = IIdRegistry(ID_REGISTRY).custodyOf(messageData.fid);
         if (creator == address(0)) revert FidNotRegistered();
+        if (_adSlotsCreators[frameId] != address(0)) revert FrameAlreadyOnSale();
 
         // TODO: there is no way to 100% know that a cast corresponds to a frame creation.
         // The only way is to suppose that an user submits the message corresponding to a frame creation.
         // Basically it does not make sense to call putAdSlotsOnSale with a message that doesn't correspond to a cast creation
-        _adSlotsOnSale[frameId] = true;
+        _adSlotsCreators[frameId] = creator;
 
-        emit AdSlotsForSale(frameId, messageData.fid);
+        emit AdSlotsForSale(frameId, messageData.fid, url);
     }
 
     /// @inheritdoc IAdBooster

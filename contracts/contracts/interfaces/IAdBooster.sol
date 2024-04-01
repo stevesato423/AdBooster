@@ -9,7 +9,7 @@ interface IAdBooster {
     }
 
     event AdSlotBought(bytes32 indexed frameId, uint256 indexed slot, uint256 indexed fid, uint256 amount, string ref);
-    event AdSlotsForSale(bytes32 indexed frameId, uint256 indexed fid);
+    event AdSlotsForSale(bytes32 indexed frameId, uint256 indexed fid, string url);
     event RewardClaimed(
         bytes32 indexed frameId,
         uint256 indexed slot,
@@ -23,15 +23,16 @@ interface IAdBooster {
     error AmountMustBeGreaterThanTheCurrentOne();
     error FailedToSendEth();
     error FidNotRegistered();
+    error FrameAlreadyOnSale();
     error InvalidEncoding();
-    error InvalidFrame();
+    error InvalidFrameId();
     error InvalidMessageType();
     error InvalidSignature();
     error InvalidSlot();
 
     function buyAdSlot(bytes32 frameId, uint256 slot, string calldata ref) external payable;
 
-    function claimRewardsByAdSlots(bytes calldata messageFrameCreation, uint256[] calldata slots) external payable;
+    function claimRewardsByAdSlots(bytes32 frameId, uint256[] calldata slots) external payable;
 
     function getAdsBySlots(bytes32 frameId, uint256[] calldata slots) external view returns (Ad[] memory);
 

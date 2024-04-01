@@ -10,7 +10,7 @@ import { signFarcasterMessage, hashMessage } from "./utils/farcaster-message"
 const INFLUENCER_FID = 10
 const USER_FID = 1
 const FRAME_URL = "http://localhost:3000/api"
-const SLOT_DURATION = 60
+const SLOT_DURATION = 10 * 60
 
 const ed25519Influencer = Factories.Ed25519Signer.build()
 
@@ -79,9 +79,9 @@ describe("AdBooster", () => {
     let message = MessageData.encode(messageDataFrameCreation).finish()
     const frameId = keccak256(coder.encode(["string"], [FRAME_URL]))
 
-    await expect(adBooster.connect(influencer).putAdSlotsOnSale(pubKey, signature.r, signature.s, message))
+    await expect(adBooster.putAdSlotsOnSale(pubKey, signature.r, signature.s, message))
       .to.emit(adBooster, "AdSlotsForSale")
-      .withArgs(frameId, INFLUENCER_FID)
+      .withArgs(frameId, INFLUENCER_FID, FRAME_URL)
 
     const amount = parseEther("1")
     const ipfsMultiHash = "ipfs://aaaaaa"
@@ -96,8 +96,25 @@ describe("AdBooster", () => {
       .withArgs(frameId, slot, USER_FID, amount, ipfsMultiHash)
 
     await time.increase(SLOT_DURATION * 2)
-    await expect(adBooster.connect(influencer).claimRewardsByAdSlots(message, [slot]))
+    await expect(adBooster.claimRewardsByAdSlots(frameId, [slot]))
       .to.emit(adBooster, "RewardClaimed")
       .withArgs(frameId, slot, INFLUENCER_FID, USER_FID, amount)
+  })
+
+  it("should not be possible to put the same frame on sale twice", async () => {
+    const coder = new ethers.AbiCoder()
+    let signature = await signFarcasterMessage(ed25519Influencer, messageDataFrameCreation)
+    let pubKey = (await ed25519Influencer.getSignerKey())._unsafeUnwrap()
+    let message = MessageData.encode(messageDataFrameCreation).finish()
+    const frameId = keccak256(coder.encode(["string"], [FRAME_URL]))
+
+    await expect(adBooster.putAdSlotsOnSale(pubKey, signature.r, signature.s, message))
+      .to.emit(adBooster, "AdSlotsForSale")
+      .withArgs(frameId, INFLUENCER_FID, FRAME_URL)
+
+    await expect(adBooster.putAdSlotsOnSale(pubKey, signature.r, signature.s, message)).to.be.revertedWithCustomError(
+      adBooster,
+      "FrameAlreadyOnSale",
+    )
   })
 })
