@@ -40,7 +40,7 @@ app.frame('/', async (_context) => {
   const frameId = getFrameId(_context.url)
 
   const ad = (await publicClient.readContract({
-    address: process.env.ADS_MANAGER_ADDRESS as `0x${string}`,
+    address: process.env.ADBOOSTER_ADDRESS as `0x${string}`,
     abi: adBoosterAbi,
     functionName: 'getAdForCurrentSlot',
     args: [frameId]
@@ -68,19 +68,19 @@ app.frame('/slots', async (_context) => {
 
   const [currentSlot, startTimestamp, slotDuration] = (await Promise.all([
     publicClient.readContract({
-      address: process.env.ADS_MANAGER_ADDRESS as `0x${string}`,
+      address: process.env.ADBOOSTER_ADDRESS as `0x${string}`,
       abi: adBoosterAbi,
       functionName: 'getCurrentAdSlot',
       args: []
     }),
     publicClient.readContract({
-      address: process.env.ADS_MANAGER_ADDRESS as `0x${string}`,
+      address: process.env.ADBOOSTER_ADDRESS as `0x${string}`,
       abi: adBoosterAbi,
       functionName: 'START_TIMESTAMP',
       args: []
     }),
     publicClient.readContract({
-      address: process.env.ADS_MANAGER_ADDRESS as `0x${string}`,
+      address: process.env.ADBOOSTER_ADDRESS as `0x${string}`,
       abi: adBoosterAbi,
       functionName: 'SLOT_DURATION',
       args: []
@@ -97,7 +97,7 @@ app.frame('/slots', async (_context) => {
   )
 
   const ads = (await publicClient.readContract({
-    address: process.env.ADS_MANAGER_ADDRESS as `0x${string}`,
+    address: process.env.ADBOOSTER_ADDRESS as `0x${string}`,
     abi: adBoosterAbi,
     functionName: 'getAdsBySlots', // getAdsBySlots
     args: [frameId, slots]
@@ -152,7 +152,7 @@ app.transaction('/buy', async (_context) => {
     chainId: `eip155:${optimism.id}`,
     functionName: 'buyAdSlot',
     args: [frameId, slot, ref],
-    to: process.env.ADS_MANAGER_ADDRESS as `0x${string}`,
+    to: process.env.ADBOOSTER_ADDRESS as `0x${string}`,
     value
   })
 })
