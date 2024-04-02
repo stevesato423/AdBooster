@@ -21,7 +21,13 @@ const app = new Frog({
   assetsPath: '/',
   basePath: '/api',
   headers: {
-    'Cache-Control': 'max-age=0',
+    'Cache-Control': 'no-cache'
+  },
+  imageOptions: {
+    format: 'png',
+    headers: {
+      'Cache-Control': 'no-cache'
+    }
   }
 })
 
@@ -43,13 +49,12 @@ app.frame('/', async (_context) => {
   if (ad.ref) {
     const response = await fetch(getIpfsGatewayUrl(ad.ref))
     const data = await response.json()
-    image = getIpfsGatewayUrl(data.image)
+    image = getIpfsGatewayUrl(data.image) + `?version=${new Date().getTime()}`
     url = data.url
   }
 
   return _context.res({
     image,
-    imageAspectRatio: '1:1',
     intents: [<Button.Link href={buySlotUrl}>Buy slot</Button.Link>, <Button.Redirect location={url}>View</Button.Redirect>]
   })
 })
