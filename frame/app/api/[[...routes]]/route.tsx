@@ -24,7 +24,7 @@ const app = new Frog({
 })
 
 app.frame('/', async (_context) => {
-  const NO_AD_URL = 'https://warpcast.com/allemanfredi.eth'
+  const NO_AD_URL = 'https://app.boostyblast.xyz'
   const frameId = getFrameId(_context.url)
   const buySlotUrl = `https://app.boostyblast.xyz/#/farcaster/adbooster/${frameId}/slots`
 
@@ -44,6 +44,7 @@ app.frame('/', async (_context) => {
 
   return _context.res({
     image: process.env.PLACEHOLDER_IMAGE + `?version=${new Date().getTime()}&frameId=${frameId}`,
+    imageAspectRatio: '1:1',
     headers: {
       'Cache-Control': 'public, max-age=0'
     },
