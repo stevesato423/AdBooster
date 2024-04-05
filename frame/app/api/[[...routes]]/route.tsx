@@ -2,14 +2,15 @@
 
 import { Button, Frog } from 'frog'
 import { devtools } from 'frog/dev'
-import { createPublicClient, http, keccak256, encodeAbiParameters, formatEther, parseEther } from 'viem'
+import { createPublicClient, http, keccak256, encodeAbiParameters } from 'viem'
 import { optimism } from 'viem/chains'
 import { handle } from 'frog/next'
 import { serveStatic } from 'frog/serve-static'
 
 import adBoosterAbi from '../../utils/abi/AdBooster.json'
 
-const getIpfsGatewayUrl = (_ref: string) => _ref.startsWith('ipfs://') ? `https://cloudflare-ipfs.com/ipfs/${_ref.slice(7)}` : _ref
+const getIpfsGatewayUrl = (_ref: string) =>
+  _ref.startsWith('ipfs://') ? `https://gateway.pinata.cloud/ipfs/${_ref.slice(7)}` : _ref
 const getFrameId = (_url: string) => keccak256(encodeAbiParameters([{ type: 'string' }], [_url]))
 
 const publicClient = createPublicClient({
@@ -19,22 +20,12 @@ const publicClient = createPublicClient({
 
 const app = new Frog({
   assetsPath: '/',
-  basePath: '/api',
-  headers: {
-    'Cache-Control': 'no-cache'
-  },
-  imageOptions: {
-    format: 'png',
-    headers: {
-      'Cache-Control': 'no-cache'
-    }
-  }
+  basePath: '/api'
 })
 
 app.frame('/', async (_context) => {
-  const NO_AD_IMAGE = '/placeholder.png'
   const NO_AD_URL = 'https://warpcast.com/allemanfredi.eth'
-  const frameId = getFrameId(_context.url) // _context.url
+  const frameId = getFrameId(_context.url)
   const buySlotUrl = `https://app.boostyblast.xyz/#/farcaster/adbooster/${frameId}/slots`
 
   const ad = (await publicClient.readContract({
@@ -44,18 +35,27 @@ app.frame('/', async (_context) => {
     args: [frameId]
   })) as any
 
-  let image = NO_AD_IMAGE
   let url = NO_AD_URL
   if (ad.ref) {
     const response = await fetch(getIpfsGatewayUrl(ad.ref))
     const data = await response.json()
-    image = getIpfsGatewayUrl(data.image) + `?version=${new Date().getTime()}`
     url = data.url
   }
 
   return _context.res({
-    image,
-    intents: [<Button.Link href={buySlotUrl}>Buy slot</Button.Link>, <Button.Redirect location={url}>View</Button.Redirect>]
+    image: process.env.PLACEHOLDER_IMAGE + `?version=${new Date().getTime()}&frameId=${frameId}`,
+    headers: {
+      'Cache-Control': 'public, max-age=0'
+    },
+    imageOptions: {
+      headers: {
+        'Cache-Control': 'public, max-age=0'
+      }
+    },
+    intents: [
+      <Button.Link href={buySlotUrl}>Buy slot</Button.Link>,
+      <Button.Redirect location={url}>View</Button.Redirect>
+    ]
   })
 })
 
