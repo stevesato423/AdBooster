@@ -21,6 +21,24 @@ Enter AdBooster: a decentralized advertising space where users can sell digital 
 
 &nbsp;
 
+## How to deploy your AdBooster Frame
+
+
+```
+git clone https://github.com/allemanfredi/adbooster
+cd frame
+npm run deploy
+```
+
+After you obtain the Vercel URL, proceed to Warpcast and initiate the cast by inserting the URL. Next, copy the cast URL (for example, [https://warpcast.com/allemanfredi.eth/0xb3493f2c](https://warpcast.com/allemanfredi.eth/0xb3493f2c)) and navigate to [BoostyBlast](https://app.boostyblast.xyz/#/farcaster/boost). Select 'AdBooster' and input the URL into the modal. Please wait a few seconds before clicking on the 'Enable Sell' button. That's all; your digital space is now listed for sale.
+
+
+&nbsp;
+
+***
+
+&nbsp;
+
 
 ## How it works
 * Once the user has created the AdBooster frame, he must call `putAdSlotsOnSale`, providing the AdBooster contract with the signed Farcaster message that proves the user has indeed created the Frame.
